@@ -1,26 +1,3 @@
-task_list:
-    注册时key=pattern, value={func}
-    运行时会从平台获得task任务
-    更新task_list, 更新后key=job_id, value={job_id, name, func等}
-# xxl-job-executor-go
-很多公司java与go开发共存，java中有xxl-job做为任务调度引擎，为此也出现了go执行器(客户端)，使用起来比较简单：
-# 支持
-```	
-1.执行器注册
-2.耗时任务取消
-3.任务注册，像写http.Handler一样方便
-4.任务panic处理
-5.阻塞策略处理
-6.任务完成支持返回执行备注
-7.任务超时取消 (单位：秒，0为不限制)
-8.失败重试次数(在参数param中，目前由任务自行处理)
-9.可自定义日志
-10.自定义日志查看handler
-11.支持外部路由（可与gin集成）
-```
-
-# Example
-```
 package main
 
 import (
@@ -59,7 +36,10 @@ func main() {
 //xxl.Logger接口实现
 type logger struct{}
 
-joblog:
-    task的log
-logrus:
-    服务的log
+func (l *logger) Info(format string, a ...interface{}) {
+	fmt.Println(fmt.Sprintf("自定义日志 - "+format, a...))
+}
+
+func (l *logger) Error(format string, a ...interface{}) {
+	log.Println(fmt.Sprintf("自定义日志 - "+format, a...))
+}
