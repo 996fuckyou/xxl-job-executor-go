@@ -1,7 +1,5 @@
-task_list:
-    注册时key=pattern, value={func}
-    运行时会从平台获得task任务
-    更新task_list, 更新后key=job_id, value={job_id, name, func等}
+个人添加了task任务log以及返回的log
+服务log与任务log区分
 # xxl-job-executor-go
 很多公司java与go开发共存，java中有xxl-job做为任务调度引擎，为此也出现了go执行器(客户端)，使用起来比较简单：
 # 支持
@@ -24,37 +22,37 @@ task_list:
 package main
 
 import (
-	"fmt"
-	xxl "github.com/xxl-job/xxl-job-executor-go"
-	"github.com/xxl-job/xxl-job-executor-go/example/task"
+	"executor-go/config"
+	"executor-go/handler"
+	"executor-go/joblog"
+	"executor-go/task"
+	"executor-go/util"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
 func main() {
-	exec := xxl.NewExecutor(
-		xxl.ServerAddr("http://127.0.0.1/xxl-job-admin"),
-		xxl.AccessToken(""),            //请求令牌(默认为空)
-		xxl.ExecutorIp("127.0.0.1"),    //可自动获取
-		xxl.ExecutorPort("9999"),       //默认9999（非必填）
-		xxl.RegistryKey("golang-jobs"), //执行器名称
-		xxl.SetLogger(&logger{}),       //自定义日志
+	config.LogPath = "/data01/xxl-job/log/jobhandler"   //存放日志的地址
+	execLog := logrus.New()
+	execLog.SetReportCaller(true)
+	execLog.SetFormatter(&util.LogFormatter{})
+	exec := handler.NewExecutor(
+		handler.ServerAddr("http://127.0.0.1:11111/xxl-job-admin"),
+		handler.AccessToken("default_token"),    //请求令牌(默认为空)
+		handler.ExecutorIp("127.0.0.1"),         //可自动获取
+		handler.ExecutorPort("11112"),           //默认9999（非必填）
+		handler.RegistryKey("golang-jobs"),      //执行器名称
+		handler.SetLogger(execLog), //自定义日志
 	)
 	exec.Init()
 	//设置日志查看handler
-	exec.LogHandler(func(req *xxl.LogReq) *xxl.LogRes {
-		return &xxl.LogRes{Code: xxl.SuccessCode, Msg: "", Content: xxl.LogResContent{
-			FromLineNum: req.FromLineNum,
-			ToLineNum:   2,
-			LogContent:  "这个是自定义日志handler",
-			IsEnd:       true,
-		}}
-	})
+	exec.LogHandler(joblog.GetJobLog)
 	//注册任务handler
 	exec.RegTask("task.test", task.Test)
-	exec.RegTask("task.test2", task.Test2)
-	exec.RegTask("task.panic", task.Panic)
 	log.Fatal(exec.Run())
 }
+
+
 
 //xxl.Logger接口实现
 type logger struct{}
