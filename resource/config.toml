@@ -1,0 +1,6 @@
+log_path = "/data01/xxl-job/log/jobhandler"
+executor_ip = "127.0.0.1"
+executor_port = "18801"
+register_key = "golang-executor"
+access_token = "default_token"
+server_addr = "http://127.0.0.1:18822/xxl-job-admin"
